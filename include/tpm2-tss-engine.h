@@ -32,6 +32,7 @@
 #define TPM2_TSS_ENGINE_H
 
 #include <openssl/engine.h>
+#include <tss2/tss2_esys.h>
 #include <tss2/tss2_tpm2_types.h>
 
 #ifdef __cplusplus
@@ -87,6 +88,9 @@ tpm2tss_ecc_getappdata(EC_KEY *key);
 
 int
 tpm2tss_ecc_setappdata(EC_KEY *key, TPM2_DATA *data);
+
+int
+tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle);
 
 #ifdef __cplusplus
 }

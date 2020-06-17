@@ -588,3 +588,60 @@ init_tpm_key (ESYS_CONTEXT **esys_ctx, ESYS_TR *keyHandle, TPM2_DATA *tpm2Data)
     esys_ctx_free(esys_ctx);
     return r;
 }
+
+
+int tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle)
+{
+    TSS2_RC r = 1;
+    ESYS_TR transKeyHandle = ESYS_TR_NONE;
+    ESYS_TR newKeyHandle = ESYS_TR_NONE;
+    ESYS_TR parentKeyHandle = ESYS_TR_NONE;
+    ESYS_CONTEXT *esys_ctx = NULL;
+
+    if (tpm2Data->privatetype == KEY_TYPE_HANDLE) {
+        fprintf(stderr, "%s: Given tpm2data->privatetype of keyhandle", __func__);
+        goto error;
+    }
+
+    r = init_tpm_key(&esys_ctx, &transKeyHandle, tpm2Data);
+
+    if (r == TSS2_ESYS_RC_MEMORY) {
+        fprintf(stderr, "%s: init Malloc failure\n", __func__);
+        goto error;
+    } else if (r == 0x000009a2) { /* Magic number from tpm2-tss-enigne */
+        fprintf(stderr, "%s init Auth failure\n", __func__);
+        goto error;
+    } else if (r) {
+        fprintf(stderr, "%s: init Unknown error %d\n", __func__, r);
+        goto error;
+    }
+
+    r = Esys_EvictControl(esys_ctx, ESYS_TR_RH_OWNER, transKeyHandle,
+                          ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                          persKeyHandle, &newKeyHandle);
+
+    if (r == TSS2_ESYS_RC_MEMORY) {
+        fprintf(stderr, "%s: Evict Malloc failure\n", __func__);
+        goto error;
+    } else if (r == 0x000009a2) { /* Magic number from tpm2-tss-enigne */
+        fprintf(stderr, "%s: Evict failure\n", __func__);
+        goto error;
+    } else if (r) {
+        fprintf(stderr, "%s: Evict Unknown error %d\n\n", __func__, r);
+        goto error;
+    }
+    /* Success! */
+    goto out;
+    error:
+    if (parentKeyHandle != ESYS_TR_NONE)
+        Esys_FlushContext(esys_ctx, parentKeyHandle);
+    if (newKeyHandle != ESYS_TR_NONE)
+        Esys_FlushContext(esys_ctx, newKeyHandle);
+    newKeyHandle = ESYS_TR_NONE;
+
+    out:
+    esys_ctx_free(&esys_ctx);
+
+    /* Note: Esys libraries use 0 to indicate success and our library uses 1 */
+    return !r;
+}
