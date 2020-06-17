@@ -590,7 +590,7 @@ init_tpm_key (ESYS_CONTEXT **esys_ctx, ESYS_TR *keyHandle, TPM2_DATA *tpm2Data)
 }
 
 
-int tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle)
+int tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle, ESYS_TR owner)
 {
     TSS2_RC r = 1;
     ESYS_TR transKeyHandle = ESYS_TR_NONE;
@@ -616,7 +616,7 @@ int tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle)
         goto error;
     }
 
-    r = Esys_EvictControl(esys_ctx, ESYS_TR_RH_OWNER, transKeyHandle,
+    r = Esys_EvictControl(esys_ctx, owner, transKeyHandle,
                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                           persKeyHandle, &newKeyHandle);
 

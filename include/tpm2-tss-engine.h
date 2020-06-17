@@ -90,7 +90,7 @@ int
 tpm2tss_ecc_setappdata(EC_KEY *key, TPM2_DATA *data);
 
 int
-tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle);
+tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle, ESYS_TR owner);
 
 #ifdef __cplusplus
 }
