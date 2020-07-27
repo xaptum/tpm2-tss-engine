@@ -590,6 +590,17 @@ init_tpm_key (ESYS_CONTEXT **esys_ctx, ESYS_TR *keyHandle, TPM2_DATA *tpm2Data)
 }
 
 
+/** Initialize the ESYS TPM connection, load a key then evict the key
+ *
+ * Establish a connection with the TPM using ESYS libraries, create a primary
+ * key using the persistent handle, evict the key into persistent storage and
+ * return the result.
+ * @param tpm2Data The key data, owner auth and key auth to be used
+ * @param persKeyHandle The persistent handle of the key
+ * @param owner The handle of the keys owner
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_RCs according to the error
+ */
 int tpm2tss_load_and_evict(TPM2_DATA *tpm2Data, ESYS_TR persKeyHandle, ESYS_TR owner)
 {
     TSS2_RC r = 1;
